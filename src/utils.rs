@@ -10,7 +10,7 @@ use valence::{
     BlockPos,
 };
 
-use crate::{line::Line3, prediction::prediction_state::PredictionState};
+use crate::prediction::prediction_state::PredictionState;
 
 pub const PLAYER_WIDTH: f64 = 0.6;
 pub const PLAYER_HEIGHT: f64 = 1.8;
@@ -91,59 +91,6 @@ fn draw_particle(client: &mut Client, color: Vec3, pos: DVec3) {
     );
 }
 
-#[allow(dead_code)]
-pub fn get_lines_for_block(pos: BlockPos) -> Vec<Line3> {
-    let mut lines = Vec::new();
-
-    let pos = Vec3::new(pos.x as f32, pos.y as f32, pos.z as f32);
-
-    lines.push(Line3::new(pos, pos + Vec3::new(1., 0., 0.)));
-    lines.push(Line3::new(pos, pos + Vec3::new(0., 1., 0.)));
-    lines.push(Line3::new(pos, pos + Vec3::new(0., 0., 1.)));
-
-    lines.push(Line3::new(
-        pos + Vec3::new(1., 0., 0.),
-        pos + Vec3::new(1., 1., 0.),
-    ));
-    lines.push(Line3::new(
-        pos + Vec3::new(1., 0., 0.),
-        pos + Vec3::new(1., 0., 1.),
-    ));
-
-    lines.push(Line3::new(
-        pos + Vec3::new(0., 1., 0.),
-        pos + Vec3::new(1., 1., 0.),
-    ));
-    lines.push(Line3::new(
-        pos + Vec3::new(0., 1., 0.),
-        pos + Vec3::new(0., 1., 1.),
-    ));
-
-    lines.push(Line3::new(
-        pos + Vec3::new(0., 0., 1.),
-        pos + Vec3::new(1., 0., 1.),
-    ));
-    lines.push(Line3::new(
-        pos + Vec3::new(0., 0., 1.),
-        pos + Vec3::new(0., 1., 1.),
-    ));
-
-    lines.push(Line3::new(
-        pos + Vec3::new(1., 1., 0.),
-        pos + Vec3::new(1., 1., 1.),
-    ));
-    lines.push(Line3::new(
-        pos + Vec3::new(1., 0., 1.),
-        pos + Vec3::new(1., 1., 1.),
-    ));
-    lines.push(Line3::new(
-        pos + Vec3::new(0., 1., 1.),
-        pos + Vec3::new(1., 1., 1.),
-    ));
-
-    lines
-}
-
 pub fn random_yaw() -> f32 {
     random_yaw_dist(60.0)
 }
@@ -172,33 +119,24 @@ pub fn get_blocks_between(start: Vec3, end: Vec3) -> Vec<BlockPos> {
     let gy1idx = gy1.floor() as i32;
     let gz1idx = gz1.floor() as i32;
 
-    let sx = if gx1idx > gx0idx {
-        1
-    } else {
-        if gx1idx < gx0idx {
-            -1
-        } else {
-            0
-        }
+    let sx = match gx1idx.cmp(&gx0idx) {
+        std::cmp::Ordering::Greater => 1,
+        std::cmp::Ordering::Less => -1,
+        std::cmp::Ordering::Equal => 0,
     };
-    let sy = if gy1idx > gy0idx {
-        1
-    } else {
-        if gy1idx < gy0idx {
-            -1
-        } else {
-            0
-        }
+
+    let sy = match gy1idx.cmp(&gy0idx) {
+        std::cmp::Ordering::Greater => 1,
+        std::cmp::Ordering::Less => -1,
+        std::cmp::Ordering::Equal => 0,
     };
-    let sz = if gz1idx > gz0idx {
-        1
-    } else {
-        if gz1idx < gz0idx {
-            -1
-        } else {
-            0
-        }
+
+    let sz = match gz1idx.cmp(&gz0idx) {
+        std::cmp::Ordering::Greater => 1,
+        std::cmp::Ordering::Less => -1,
+        std::cmp::Ordering::Equal => 0,
     };
+
 
     let mut gx = gx0idx;
     let mut gy = gy0idx;

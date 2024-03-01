@@ -7,7 +7,7 @@ use valence::{
     BlockPos,
 };
 
-use crate::{line::Line3, utils::*};
+use crate::utils::*;
 
 /*
  * Jump: net.minecraft.world.entity.LivingEntity: line ~1950
@@ -99,7 +99,7 @@ impl PredictionState {
     pub fn get_intersected_blocks(&self) -> Vec<BlockPos> {
         let mut poses = HashSet::new();
 
-        let pos = self.pos.clone() - DVec3::new(PLAYER_WIDTH / 2., 0., PLAYER_WIDTH / 2.);
+        let pos = self.pos - DVec3::new(PLAYER_WIDTH / 2., 0., PLAYER_WIDTH / 2.);
 
         for x in 0..=2 {
             for y in 0..=2 {
@@ -145,7 +145,7 @@ impl PredictionState {
     }
 
     pub fn draw_particles(&self, ticks: usize, client: &mut Client) {
-        let mut state = self.clone();
+        let mut state = *self;
 
         for _ in 0..ticks {
             state.draw_particle(client);
@@ -153,51 +153,20 @@ impl PredictionState {
         }
     }
 
-    pub fn get_lines_for_number_of_ticks(&self, ticks: usize) -> Vec<Line3> {
-        let mut state = self.clone();
-        let mut pos = state.pos;
-        let mut lines = Vec::new();
-
-        for _ in 0..ticks {
-            state.tick();
-            let new_pos = state.pos;
-            lines.push(Line3::new(pos.as_vec3(), new_pos.as_vec3()));
-            pos = new_pos;
-        }
-
-        lines
-    }
-
-    pub fn get_state_in_ticks(&self, ticks: u32) -> (Self, Vec<Line3>) {
-        let mut state = self.clone();
-
-        let mut lines = Vec::new();
-
-        let mut prev = state.pos;
-        for _ in 0..ticks {
-            state.tick();
-            let new_pos = state.pos;
-            lines.push(Line3::new(prev.as_vec3(), new_pos.as_vec3()));
-            prev = new_pos;
-        }
-
-        (state, lines)
-    }
-
     fn get_accel(&self) -> DVec3 {
         let accel = 0.98f64;
 
-        return DVec3::new(
+        DVec3::new(
             -accel * self.yaw.sin() as f64,
             0.0,
             accel * self.yaw.cos() as f64,
-        );
+        )
     }
 
     fn handle_relative_friction_and_calculate_movement(&mut self, accel: DVec3) -> DVec3 {
         self.move_relative(self.get_friction_influenced_speed(BLOCK_FRICTION), accel);
         self.pos += self.vel;
-        return self.vel;
+        self.vel
     }
 
     fn move_relative(&mut self, speed: f32, accel: DVec3) {
